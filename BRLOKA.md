@@ -63,30 +63,40 @@ local refs resolve, all 6 font files present and valid woff2.
 
 - Font files: originally vendored with a trailing `'` in the filename and the
   `.ttf`/`.woff` downloads were S3 `NoSuchKey` error XML. Fixed 2026-11-19:
-  renamed, junk formats deleted, `fonts.css` references woff2 only.
-- CTA form (`#ctaForm`) is demo-only — shows a confirmation message, sends nothing.
+  junk formats deleted, `fonts.css` references woff2 only.
+- CTA form (`#ctaForm`): set `CTA_ENDPOINT` at the top of the CTA section in
+  `script.js` to a real URL to receive `POST {"email": "..."}`; empty string =
+  demo mode (validates locally, sends nothing).
 - Footer links under Company/Resources/Legal are placeholders (`#top` / `#faq`).
 - Stats/testimonials/marquee companies are fictional placeholder content.
-- Favicon is an inline SVG data URI; no separate file needed.
+- Favicon is an inline SVG data URI; `assets/og-image.png` is the social card
+  (1200x630, rendered with the vendored fonts).
 
-## How to continue (next steps, in order)
+## Status (2026-11-19) — DONE
 
-1. **Visual pass in a real browser** — open it, click through, toggle theme, resize
-   to mobile width, test the burger menu. Fix anything that looks off.
-2. **Meta/SEO polish** — add Open Graph tags (`og:title`, `og:description`,
-   `og:image`, `twitter:card`) and a `<meta name="theme-color">` in `<head>`.
-3. **Content** — replace fictional stats/testimonials with real ones (or keep as
-   clearly-demo copy), decide on footer link targets (real pages vs. remove).
-4. **Wire the CTA** — point `#ctaForm` at a real endpoint (e.g. a form service or
-   your own backend) instead of the demo message.
-5. **Deploy** — any static host (GitHub Pages, Cloudflare Pages, Netlify).
-   No build step needed; upload the folder as-is.
-6. If more pages are needed (docs, blog, changelog), keep the same pattern:
-   one HTML file per page sharing `styles.css`/`script.js`, new section classes in
-   `styles.css`.
+- Meta/SEO: canonical, OG + Twitter cards, `theme-color` (synced on theme
+  toggle), hero fonts preloaded.
+- Verified in headless Chromium (desktop 1440px + mobile 390px, dark + light):
+  zero console/page errors, zero failed requests, all 6 woff2 fonts load;
+  theme toggle, burger menu, pricing toggle, FAQ, terminal demo, counters and
+  CTA validation all work; no horizontal overflow on mobile.
+- Deployed: **https://1xxalexx1.github.io/ursus-ai/** (GitHub Pages, `main` / root,
+  public repo `1xxalexx1/ursus-ai`). Live check passed (HTTP 200, fonts + OG
+  image 200, no errors). Redeploys automatically on every push to `main`.
+
+## How to continue (remaining ideas, in order)
+
+1. Set `CTA_ENDPOINT` in `script.js` when a real signup endpoint exists.
+2. Replace fictional stats/testimonials/marquee with real content, or keep as
+   clearly-demo copy; decide footer link targets (real pages vs. remove).
+3. Custom domain: add a `CNAME` file at the repo root + set it in
+   `Settings → Pages`, then update canonical/OG URLs.
+4. If more pages are needed (docs, blog, changelog), keep the same pattern:
+   one HTML file per page sharing `styles.css`/`script.js`, new section classes
+   in `styles.css`.
 
 ## Git
 
-Repo initialized on `main`. Initial build committed as `5af15d5`
-("Ursus AI SaaS site — initial build, fonts vendored for offline use").
-Later fixes are uncommitted until Alex says to commit.
+Public repo `github.com/1xxalexx1/ursus-ai`, branch `main`, remote `origin`.
+Commits use the noreply author email (GitHub rejects the `.local` one).
+Push to `main` = automatic Pages redeploy.
