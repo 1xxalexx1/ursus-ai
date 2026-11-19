@@ -7,15 +7,20 @@
 
   /* ---------- theme (day / night den) ---------- */
   var root = document.documentElement;
+  var themeColorMeta = document.getElementById("themeColor");
+  var THEME_COLORS = { dark: "#0a0e0b", light: "#f5f1e6" };
+  function applyTheme(theme) {
+    root.setAttribute("data-theme", theme);
+    if (themeColorMeta) themeColorMeta.setAttribute("content", THEME_COLORS[theme] || THEME_COLORS.dark);
+    try { localStorage.setItem("ursus-theme", theme); } catch (e) {}
+  }
   var saved = null;
   try { saved = localStorage.getItem("ursus-theme"); } catch (e) {}
   var initial = saved || (window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark");
-  root.setAttribute("data-theme", initial);
+  applyTheme(initial);
 
   document.getElementById("themeToggle").addEventListener("click", function () {
-    var next = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
-    root.setAttribute("data-theme", next);
-    try { localStorage.setItem("ursus-theme", next); } catch (e) {}
+    applyTheme(root.getAttribute("data-theme") === "dark" ? "light" : "dark");
   });
 
   /* ---------- nav: scrolled state, burger, scroll progress ---------- */
@@ -210,14 +215,38 @@
   });
 
   /* ---------- CTA form ---------- */
+  // Set CTA_ENDPOINT to a real URL to receive signups as JSON POST {"email": "..."}.
+  // Empty string = demo mode: validate locally and show a confirmation, send nothing.
+  var CTA_ENDPOINT = "";
   var form = document.getElementById("ctaForm");
   var msg = document.getElementById("ctaMsg");
+  var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
   form.addEventListener("submit", function (e) {
     e.preventDefault();
-    var email = document.getElementById("ctaEmail").value.trim();
-    if (!email) return;
-    msg.textContent = "Welcome to the den, " + email + " — check your inbox for the key.";
-    form.reset();
+    var input = document.getElementById("ctaEmail");
+    var email = input.value.trim();
+    if (!EMAIL_RE.test(email)) {
+      msg.textContent = "That email looks off — try again.";
+      input.focus();
+      return;
+    }
+    if (!CTA_ENDPOINT) {
+      msg.textContent = "Welcome to the den, " + email + " — check your inbox for the key.";
+      form.reset();
+      return;
+    }
+    msg.textContent = "Sending...";
+    fetch(CTA_ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: email })
+    }).then(function (res) {
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      msg.textContent = "Welcome to the den, " + email + " — check your inbox for the key.";
+      form.reset();
+    }).catch(function () {
+      msg.textContent = "Couldn't reach the den — try again in a moment.";
+    });
   });
 
   /* ---------- card tilt ---------- */
